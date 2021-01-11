@@ -1,4 +1,3 @@
-import json
 import os
 import sqlite3
 from flask import Flask, render_template, url_for, request, flash, redirect, jsonify
@@ -11,7 +10,7 @@ from sqlalchemy.orm import sessionmaker
 from init_db import Post
 
 app = Flask(__name__, static_folder='static')
-app.config['SECRET_KEY'] = 'my_secret_key'
+app.config['SECRET_KEY'] = 'ea135929105c4f29a0f5117d2960926f'
 app.config['JSON_AS_ASCII'] = False
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -23,13 +22,13 @@ session = DBSession()
 
 
 @app.route('/')
-@app.route('/index')
+@app.route('/index/')
 def index():
     posts = session.query(Post).all()
-    return render_template('index.html', posts=posts)
+    return render_template('index.html', posts=reversed(posts))
 
 
-@app.route('/api/posts')
+@app.route('/api/posts/')
 def api_index():
     posts = session.query(Post).all()
 
@@ -44,7 +43,7 @@ def api_index():
     return jsonify(json_posts)
 
 
-@app.route('/api/posts/<int:post_id>')
+@app.route('/api/posts/<int:post_id>/')
 def api_post(post_id):
     post = session.query(Post).filter_by(id=post_id).one()
     return jsonify({
@@ -55,10 +54,10 @@ def api_post(post_id):
     })
 
 
-@app.route('/posts/<int:post_id>')
+@app.route('/posts/<int:post_id>/')
 def post_detail(post_id):
-    one_post = Post.query.get_or_404(id=post_id)
-    return render_template('post.html', post=one_post)
+    post = session.query(Post).filter_by(id=post_id).one()
+    return render_template('post.html', post=post)
 
 
 @app.route('/new', methods=('GET', 'POST'))
@@ -69,7 +68,8 @@ def new_post():
 
         if title_request == "" or text_request == "":
             return redirect(url_for('new_post'))
-        post = Post.query.create(title=title_request, text=text_request)
+
+        post = Post(title=title_request, text=text_request)
 
         session.add(post)
         session.commit()
@@ -88,7 +88,7 @@ def api_new_post():
 
     if title_request == "" or text_request == "":
         return redirect(url_for('api_index'))
-    post = Post.query.create(title=title_request, text=text_request)
+    post = Post(title=title_request, text=text_request)
 
     session.add(post)
     session.commit()
@@ -97,7 +97,8 @@ def api_new_post():
 
 @app.route('/posts/<int:post_id>/edit', methods=('GET', 'POST'))
 def post_edit(post_id):
-    edited_post = Post.query.get_or_404(id=post_id)
+    edited_post = session.query(Post).filter_by(id=post_id).one()
+    # edited_post = Post.query.get_or_404(id=post_id)
 
     if request.method == 'POST':
         title = request.form['title']
@@ -114,7 +115,7 @@ def post_edit(post_id):
 
 @app.route('/posts/<int:post_id>/delete', methods=('POST',))
 def delete(post_id):
-    deleted_post = Post.query.get_or_404(id=post_id)
+    deleted_post = session.query(Post).filter_by(id=post_id).one()
     session.delete(deleted_post)
     session.commit()
     return redirect(url_for("index"))

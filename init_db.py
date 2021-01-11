@@ -3,6 +3,7 @@ import json
 import os
 
 from sqlalchemy import Column, ForeignKey, Integer, String, Text, Date
+from flask_sqlalchemy import SQLAlchemy
 
 # для определения таблицы и модели
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
@@ -16,7 +17,6 @@ from datetime import datetime
 
 # создание экземпляра declarative_base
 Base = declarative_base()
-
 
 # здесь создаем наши модели
 class Post(Base):
