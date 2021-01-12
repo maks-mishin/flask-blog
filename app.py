@@ -25,6 +25,8 @@ session = DBSession()
 @app.route('/index/')
 def index():
     posts = session.query(Post).all()
+    for i in range(len(posts)):
+        print(posts[i].id)
     return render_template('index.html', posts=reversed(posts))
 
 
@@ -45,7 +47,7 @@ def api_index():
 
 @app.route('/api/posts/<int:post_id>/')
 def api_post(post_id):
-    post = session.query(Post).filter_by(id=post_id).one()
+    post = session.query(Post).filter_by(id=post_id).first()
     return jsonify({
         "id": post.id,
         "text": post.text,
@@ -56,7 +58,7 @@ def api_post(post_id):
 
 @app.route('/posts/<int:post_id>/')
 def post_detail(post_id):
-    post = session.query(Post).filter_by(id=post_id).one()
+    post = session.query(Post).filter_by(id=post_id).first()
     return render_template('post.html', post=post)
 
 
@@ -97,8 +99,7 @@ def api_new_post():
 
 @app.route('/posts/<int:post_id>/edit', methods=('GET', 'POST'))
 def post_edit(post_id):
-    edited_post = session.query(Post).filter_by(id=post_id).one()
-    # edited_post = Post.query.get_or_404(id=post_id)
+    edited_post = session.query(Post).filter_by(id=post_id).first()
 
     if request.method == 'POST':
         title = request.form['title']
@@ -115,7 +116,7 @@ def post_edit(post_id):
 
 @app.route('/posts/<int:post_id>/delete', methods=('POST',))
 def delete(post_id):
-    deleted_post = session.query(Post).filter_by(id=post_id).one()
+    deleted_post = session.query(Post).filter_by(id=post_id).first()
     session.delete(deleted_post)
     session.commit()
     return redirect(url_for("index"))
